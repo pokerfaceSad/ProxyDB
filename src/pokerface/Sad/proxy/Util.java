@@ -48,7 +48,7 @@ public class Util {
 						"http://1212.ip138.com/ic.asp", null, null)));
 				flag = false;
 			} catch (Exception e) {
-				logger.error("获取本地IP失败，请检查网络.....",e);
+				logger.error("获取本地IP失败，请检查网络.....", e);
 			}
 		}
 
@@ -64,7 +64,7 @@ public class Util {
 			return;
 		} catch (NumberFormatException e) {
 			logger.info("Result: " + proxy.ip + ":" + proxy.port
-					+ " 不可用	Reason: 格式错误",e);
+					+ " 不可用	Reason: 格式错误", e);
 		}
 		if (html == null || html.isEmpty()) {
 			// 若响应为空则代理不可用
@@ -84,15 +84,24 @@ public class Util {
 			// 比较本地ip与代理ip
 			if (localIp.equals(getIP(testResult))) {
 				proxy.isAnonymous = "透明";
+				proxy.available = false; //滤除透明的代理
+				return;
 			} else {
 				proxy.isAnonymous = "匿名";
 				proxy.location = getLocation(testResult);
 			}
 			// 判断是否支持https
-			// 访问 https 协议的知乎 根据是否得到响应判断
 			try {
-				HttpUtil.get("https://zhihu.com", proxy.ip, proxy.port);
-				proxy.isHttpsSupported = true;
+				String response = HttpUtil.get("https://www.zhihu.com/",
+						proxy.ip, proxy.port);
+				if (response.indexOf("知乎") != -1)
+				{
+					logger.info(proxy.ip + ":" + proxy.port + " 支持Https");
+					proxy.isHttpsSupported = true;
+				} else {
+					logger.info(proxy.ip + ":" + proxy.port + " 不支持Https");
+					proxy.isHttpsSupported = false;
+				}
 			} catch (IOException e) {
 				logger.info(proxy.ip + ":" + proxy.port + " 不支持Https");
 				proxy.isHttpsSupported = false;
@@ -146,29 +155,30 @@ public class Util {
 		return location;
 	}
 
-
 	/**
 	 * 将proxyList中无效的Proxy标记
 	 * 
 	 * @param proxyList
 	 */
-	public static void markUseless(List<Proxy> proxyList){
+	public static void markUseless(List<Proxy> proxyList) {
 		for (Proxy proxy : proxyList) {
-			logger.info(proxy.ip + ":" + proxy.port+"开始检测");
+			logger.info(proxy.ip + ":" + proxy.port + "开始检测");
+			boolean httpsSupported = proxy.isHttpsSupported;
 			Util.proxyTest(proxy);
-			if (proxy.available == true)
+			if (proxy.available == true && httpsSupported == proxy.isHttpsSupported)
 				logger.info(proxy.ip + ":" + proxy.port + "检测完成，可用");
 			else
 				logger.info(proxy.ip + ":" + proxy.port + "检测完成，不可用");
 		}
 	}
+
 	/**
 	 * 对返回的proxyList逐个进行检验，并移除不可用项
 	 * 
 	 * @param proxyList
 	 */
 	public static void removeUseless(List<Proxy> proxyList) {
-		
+
 		Iterator<Proxy> it = proxyList.iterator();
 		Proxy proxy = null;
 		while (it.hasNext()) {
@@ -248,27 +258,32 @@ public class Util {
 	 * @param proxyList
 	 */
 	public static void deleteUselessFromDB(List<Proxy> proxyList) {
-		
+
 		Connection conn = null;
 		PreparedStatement ps = null;
 		try {
 			conn = DBUtil.getConn();
-			ps = conn.prepareStatement(DBUtil.getProperties()
-					.getProperty("sql_delete"));
-			for (Proxy proxy : proxyList) {
-
+			ps = conn.prepareStatement(DBUtil.getProperties().getProperty(
+					"sql_delete"));
+			
+			Iterator<Proxy> it = proxyList.iterator();
+			Proxy proxy = null;
+			while(it.hasNext())
+			{
+				proxy = it.next();
 				if (proxy.available == false) {
 					ps.setString(1, proxy.ip);
 					ps.setString(2, proxy.port);
-					if(ps.executeUpdate() == 1)
-					{
-						logger.info("成功移除失效Proxy "+proxy.ip+":"+proxy.port);
+					if (ps.executeUpdate() == 1) {
+						logger.info("成功移除失效Proxy " + proxy.ip + ":"
+								+ proxy.port);
 					}
+					it.remove();
 				}
 			}
 		} catch (IOException | SQLException e) {
 			logger.error("连接数据库失败", e);
-		} finally{
+		} finally {
 			DBUtil.close(ps, conn, null);
 		}
 

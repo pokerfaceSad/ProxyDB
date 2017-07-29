@@ -30,30 +30,28 @@ public class ProxyGetter {
 	 */
 	public static LinkedList<Proxy> getKuaiDaiLi() {
 		LinkedList<Proxy> proxyList = new LinkedList<Proxy>();
-		for (int i = 1; i <= 10; i++) {
-			logger.info("正在抓取快代理第" + i + "页");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				logger.fatal("线程中断异常", e);
+		logger.info("正在抓取快代理");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			logger.fatal("线程中断异常", e);
+		}
+		String html = null;
+		try {
+			html = HttpUtil.get("http://www.kuaidaili.com/free/inha/1/", null,
+					null);
+			logger.info("Jsoup解析页面");
+			Document doc = Jsoup.parse(html);
+			Elements eles = doc.select("#list > table > tbody > tr");
+			Proxy proxy = null;
+			for (Element ele : eles) {
+				proxy = new Proxy(ele.child(0).text(), ele.child(1).text());
+				logger.debug("解析到" + proxy.ip + ":" + proxy.port);
+				proxyList.add(proxy);
 			}
-			String html = null;
-			try {
-				html = HttpUtil.get("http://www.kuaidaili.com/free/inha/" + i
-						+ "/", null, null);
-				logger.info("Jsoup解析页面");
-				Document doc = Jsoup.parse(html);
-				Elements eles = doc.select("#list > table > tbody > tr");
-				Proxy proxy = null;
-				for (Element ele : eles) {
-					proxy = new Proxy(ele.child(0).text(), ele.child(1).text());
-					logger.debug("解析到"+proxy.ip+":"+proxy.port);
-					proxyList.add(proxy);
-				}
-				logger.info("页面解析完成");
-			} catch (IOException e) {
-				logger.error("抓取快代理第" + i + "页失败",e);
-			}
+			logger.info("页面解析完成");
+		} catch (IOException e) {
+			logger.error("抓取快代理失败", e);
 		}
 
 		return proxyList;
@@ -68,39 +66,37 @@ public class ProxyGetter {
 
 		LinkedList<Proxy> proxyList = new LinkedList<Proxy>();
 
-		for (int i = 1; i <= 10; i++) {
-			logger.info("正在抓取代理66第" + i + "页");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				logger.fatal("线程中断异常", e);
-			}
-			String html = null;
-			try {
-				html = HttpUtil.get("http://www.66ip.cn/" + i + ".html", null,null);
-				
-				Document doc = Jsoup.parse(html);
-				Elements eles = doc
-						.select("#main > div > div:nth-child(1) > table > tbody > tr");
-				
-				logger.info("Jsoup解析页面");
-				int index = 0;
-				Proxy proxy = null;
-				for (Element ele : eles) {
-					if (index != 0) {
-						proxy = new Proxy();
-						proxy.ip = ele.child(0).text();
-						proxy.port = ele.child(1).text();
-						logger.debug("解析到"+proxy.ip+":"+proxy.port);
-						proxyList.add(proxy);
-					}
-					index++;
-				}
-			} catch (IOException e) {
-				logger.error("抓取代理66第" + i + "页失败",e);
-			}
-			logger.info("页面解析完成");
+		logger.info("正在抓取代理66");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			logger.fatal("线程中断异常", e);
 		}
+		String html = null;
+		try {
+			html = HttpUtil.get("http://www.66ip.cn/1.html", null, null);
+
+			Document doc = Jsoup.parse(html);
+			Elements eles = doc
+					.select("#main > div > div:nth-child(1) > table > tbody > tr");
+
+			logger.info("Jsoup解析页面");
+			int index = 0;
+			Proxy proxy = null;
+			for (Element ele : eles) {
+				if (index != 0) {
+					proxy = new Proxy();
+					proxy.ip = ele.child(0).text();
+					proxy.port = ele.child(1).text();
+					logger.debug("解析到" + proxy.ip + ":" + proxy.port);
+					proxyList.add(proxy);
+				}
+				index++;
+			}
+		} catch (IOException e) {
+			logger.error("抓取代理66失败", e);
+		}
+		logger.info("页面解析完成");
 
 		return proxyList;
 	}
@@ -112,42 +108,39 @@ public class ProxyGetter {
 	 */
 	public static List<Proxy> getFromXiCiDaiLi() {
 		List<Proxy> proxyList = new LinkedList<Proxy>();
-		for (int i = 1; i <= 10; i++) {
-			logger.info("正在抓取西刺代理第" + i + "页");
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e1) {
-				logger.error("线程中断异常", e1);
-			}
-			String html = null;
-			try {
-				html = HttpUtil.get("http://www.xicidaili.com/nn/" + i, null,null);
-				
-				Document doc = Jsoup.parse(html);
-				Elements eles = doc.select("#ip_list > tbody > tr");
-				
-				logger.info("Jsoup解析页面");
-				int index = 0;
-				for (Element e : eles) {
-					if (index != 0) {
-						Proxy proxy = new Proxy();
-						proxy.ip = e.child(1).text();
-						proxy.port = e.child(2).text();
-						logger.debug("解析到"+proxy.ip+":"+proxy.port);
-						proxyList.add(proxy);
-					}
-					index++;
+		logger.info("正在抓取西刺代理");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			logger.error("线程中断异常", e1);
+		}
+		String html = null;
+		try {
+			html = HttpUtil.get("http://www.xicidaili.com/nn/1", null, null);
+
+			Document doc = Jsoup.parse(html);
+			Elements eles = doc.select("#ip_list > tbody > tr");
+
+			logger.info("Jsoup解析页面");
+			int index = 0;
+			for (Element e : eles) {
+				if (index != 0) {
+					Proxy proxy = new Proxy();
+					proxy.ip = e.child(1).text();
+					proxy.port = e.child(2).text();
+					logger.debug("解析到" + proxy.ip + ":" + proxy.port);
+					proxyList.add(proxy);
 				}
-				logger.info("页面解析完成");
-			} catch (IOException e) {
-				logger.error("抓取西刺代理IP第" + i + "页失败",e);
+				index++;
 			}
-
-
+			logger.info("页面解析完成");
+		} catch (IOException e) {
+			logger.error("抓取西刺代理IP失败", e);
 		}
 
 		return proxyList;
 	}
+
 	/**
 	 * http://www.89ip.cn 从 89ip抓取代理信息封装为 LinkedList<Proxy> 返回
 	 * 
@@ -159,30 +152,31 @@ public class ProxyGetter {
 		logger.info("正在抓取89代理");
 		String html = null;
 		try {
-			
-			html = HttpUtil.get("http://www.89ip.cn/tiqv.php?sxb=&tqsl=200&ports=&ktip=&xl=on&submit=%CC%E1++%C8%A1", null, null);
-		
+
+			html = HttpUtil
+					.get("http://www.89ip.cn/tiqv.php?sxb=&tqsl=50&ports=&ktip=&xl=on&submit=%CC%E1++%C8%A1",
+							null, null);
+
 			Document doc = Jsoup.parse(html);
 			Pattern p = Pattern.compile("([0-9\\.]+?):([0-9]+?)\\n   <br />");
 			Matcher m = p.matcher(doc.toString());
 			logger.info("正则解析页面");
-			while(m.find())
-			{
+			while (m.find()) {
 				Proxy proxy = new Proxy();
 				proxy.ip = m.group(1);
 				proxy.port = m.group(2);
-				logger.debug("解析到"+proxy.ip+":"+proxy.port);
+				logger.debug("解析到" + proxy.ip + ":" + proxy.port);
 				proxyList.add(proxy);
 			}
 			logger.info("解析完成");
-		
+
 		} catch (IOException e) {
 			logger.error("抓取89代理失败", e);
 		}
 
 		return proxyList;
 	}
-	
+
 	/**
 	 * http://www.ip181.com/ 从 ip181抓取代理信息封装为 LinkedList<Proxy> 返回
 	 * 
@@ -194,24 +188,23 @@ public class ProxyGetter {
 		logger.info("正在抓去181代理");
 		String html = null;
 		try {
-			
+
 			html = HttpUtil.get("http://www.ip181.com/", null, null);
-			
+
 			logger.info("Jsoup解析页面");
 			Document doc = Jsoup.parse(html);
-			Elements eles = doc.select("body > div:nth-child(3) > div.panel.panel-info > div.panel-body > div > div:nth-child(2) > table > tbody > tr");
+			Elements eles = doc
+					.select("body > div:nth-child(3) > div.panel.panel-info > div.panel-body > div > div:nth-child(2) > table > tbody > tr");
 			int index = 0;
-			for(Element e:eles)
-			{
-				if(index++ != 0)
-				{
+			for (Element e : eles) {
+				if (index++ != 0) {
 					Proxy proxy = new Proxy();
 					proxy.ip = e.child(0).text();
 					proxy.port = e.child(1).text();
-					logger.debug("解析到"+proxy.ip+":"+proxy.port);
+					logger.debug("解析到" + proxy.ip + ":" + proxy.port);
 					proxyList.add(proxy);
 				}
-				
+
 			}
 			logger.info("解析完成");
 		} catch (IOException e) {
@@ -220,5 +213,5 @@ public class ProxyGetter {
 
 		return proxyList;
 	}
-	
+
 }

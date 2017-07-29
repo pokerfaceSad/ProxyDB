@@ -23,7 +23,19 @@ public class Test {
 	
 	public static void main(String[] args) throws IOException{
 //		ProxyGetter.getIP181();
-
+		List<Proxy> proxyList = new LinkedList<Proxy>();
+		int index = 0;
+		while(true)
+		{
+			Proxy proxy = new Proxy();
+			proxy.ip = "120.27.163.210";
+			proxy.port = "3128";
+			proxyList.add(proxy);
+			System.out.println(++index);
+		}
+//		String html = HttpUtil.get("http://www.oschina.net/", proxy.ip, proxy.port);
+//		String html = HttpUtil.get("https://github.com/pokerfaceSad/ProxyDB", proxy.ip, proxy.port);
+//		System.out.println(html);
 		
 	}
 }
