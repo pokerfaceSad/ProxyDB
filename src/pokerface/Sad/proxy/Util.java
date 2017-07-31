@@ -1,6 +1,7 @@
 package pokerface.Sad.proxy;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,8 +16,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
@@ -24,12 +23,6 @@ import pokerface.Sad.util.DBUtil;
 import pokerface.Sad.util.HttpUtil;
 
 public class Util {
-	public static void main(String[] args) {
-		Proxy proxy = new Proxy("31.14.133.91", "3128");
-		proxyTest(proxy);
-		System.out.println(proxy);
-
-	}
 
 	static Logger logger = null;
 	static {
@@ -37,18 +30,21 @@ public class Util {
 		logger = Logger.getLogger(Util.class);
 	}
 
-	public static void proxyTest(Proxy proxy) {
+	public static void proxyTest(Proxy proxy) throws ConnectException {
 
 		// 获取本地ip
 		String localIp = null;
 		boolean flag = true;
-		while (flag) {
+		for (int i=0;i<20;i++) {
 			try {
 				localIp = getIP(analysisTestMsg(HttpUtil.get(
 						"http://1212.ip138.com/ic.asp", null, null)));
-				flag = false;
 			} catch (Exception e) {
-				logger.error("获取本地IP失败，请检查网络.....", e);
+				if(i==19)
+				{
+					logger.error("获取本地IP失败，请检查网络.....", e);
+					throw new ConnectException("网络连接异常");
+				}
 			}
 		}
 
@@ -159,8 +155,9 @@ public class Util {
 	 * 将proxyList中无效的Proxy标记
 	 * 
 	 * @param proxyList
+	 * @throws ConnectException 
 	 */
-	public static void markUseless(List<Proxy> proxyList) {
+	public static void markUseless(List<Proxy> proxyList) throws ConnectException {
 		for (Proxy proxy : proxyList) {
 			logger.info(proxy.ip + ":" + proxy.port + "开始检测");
 			boolean httpsSupported = proxy.isHttpsSupported;

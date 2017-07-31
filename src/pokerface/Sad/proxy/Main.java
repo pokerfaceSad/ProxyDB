@@ -3,6 +3,7 @@ package pokerface.Sad.proxy;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
@@ -102,14 +103,19 @@ class CheckExisted implements Runnable{
 					logger.info(Thread.currentThread().getName()+"线程启动");
 					List<Proxy> dbProxyList = Util.readFromDB();
 					logger.info("数据库读取完成");
-					Util.markUseless(dbProxyList);
-					logger.info("标记失效完成");
-					Util.deleteUselessFromDB(dbProxyList);
-					logger.info("删除失效完成");
-					Main.proxyNum.set( dbProxyList.size());
-					logger.info("更新代理池中代理数量为"+Main.proxyNum.get());
-					Main.proxyNum.notify(); 
-					logger.info("唤醒主线程");
+					try {
+						Util.markUseless(dbProxyList); //markUseless()方法跑出ConnectException说明网络连接异常
+					
+						logger.info("标记失效完成");
+						Util.deleteUselessFromDB(dbProxyList);
+						logger.info("删除失效完成");
+						Main.proxyNum.set( dbProxyList.size());
+						logger.info("更新代理池中代理数量为"+Main.proxyNum.get());
+						Main.proxyNum.notify(); 
+						logger.info("唤醒主线程");
+					} catch (ConnectException e) {
+						logger.error("网络连接异常，线程提前休眠",e);
+					}
 				}
 				
 				logger.info(Thread.currentThread().getName()+"线程休眠");
@@ -153,7 +159,11 @@ class CrawlIntoDB implements Runnable{
 		} catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			logger.error("工具类加载异常", e);
 		}
-		Util.markUseless(proxyList);
+		try {
+			Util.markUseless(proxyList);
+		} catch (ConnectException e) {
+			logger.error("网络连接异常，线程终止",e);
+		}
 		Util.removeUseless(proxyList);
 		if(Util.writeProxyListIntoDB(proxyList))
 			logger.info("写入完成");
