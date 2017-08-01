@@ -39,6 +39,7 @@ public class Util {
 			try {
 				localIp = getIP(analysisTestMsg(HttpUtil.get(
 						"http://1212.ip138.com/ic.asp", null, null)));
+				Thread.sleep(1000);
 			} catch (Exception e) {
 				if(i==19)
 				{
