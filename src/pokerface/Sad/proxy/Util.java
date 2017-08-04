@@ -18,6 +18,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
+import com.sun.mail.iap.ConnectionException;
 
 import pokerface.Sad.util.DBUtil;
 import pokerface.Sad.util.HttpUtil;
@@ -34,17 +35,22 @@ public class Util {
 
 		// 获取本地ip
 		String localIp = null;
-		boolean flag = true;
 		for (int i=0;i<20;i++) {
 			try {
 				localIp = getIP(analysisTestMsg(HttpUtil.get(
 						"http://1212.ip138.com/ic.asp", null, null)));
-				Thread.sleep(1000);
+				if(localIp == null) throw new ConnectionException();
 			} catch (Exception e) {
 				if(i==19)
 				{
 					logger.error("获取本地IP失败，请检查网络.....", e);
 					throw new ConnectException("网络连接异常");
+				}else{
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e1) {
+						logger.error("中断异常",e1);	
+					}
 				}
 			}
 		}
